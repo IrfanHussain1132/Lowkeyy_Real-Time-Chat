@@ -9,10 +9,7 @@ const server = http.createServer(app);
 
 // 🔥 MongoDB Connection
 mongoose.connect("mongodb://127.0.0.1:27017/Lowkeyy", {
-
-
     serverSelectionTimeoutMS: 5000,
-    
 })
     .then(() => console.log("MongoDB Connected"))
     .catch(err => console.log(err));
@@ -54,7 +51,7 @@ io.on("connection", (socket) => {
         }
     });
 
-    // ✅ SEND MESSAGE (FIXED)
+    // ✅ SEND MESSAGE
     socket.on("send_message", async (text) => {
 
         if (!socket.roomId || !socket.username) return;
@@ -86,6 +83,22 @@ io.on("connection", (socket) => {
         socket.to(socket.roomId).emit("user_stopped_typing");
     });
 
+    // ✅ CLEAR CHAT  ← moved inside connection block (this was the bug)
+    socket.on("clear_chat", async () => {
+
+        if (!socket.roomId) return;
+
+        try {
+            await Message.deleteMany({ roomId: socket.roomId });
+
+            // 🔥 notify all users in room
+            io.to(socket.roomId).emit("chat_cleared");
+
+        } catch (err) {
+            console.log("Clear error:", err);
+        }
+    });
+
     // ✅ DISCONNECT
     socket.on("disconnect", () => {
         if (socket.roomId && socket.username) {
@@ -106,3 +119,4 @@ mongoose.connection.once("open", () => {
         console.log("Server running on port 3000");
     });
 });
+

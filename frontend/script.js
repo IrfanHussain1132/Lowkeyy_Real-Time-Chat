@@ -1,19 +1,19 @@
 const socket = io("http://localhost:3000");
 
-const chat    = document.getElementById("chat");
+const chat = document.getElementById("chat");
 const msgInput = document.getElementById("message");
 const usernameInput = document.getElementById("username");
-const roomInput     = document.getElementById("room");
+const roomInput = document.getElementById("room");
 
 let currentUser = "";
 let currentRoom = "";
-let typingTimer  = null;
-let typingLi     = null;
+let typingTimer = null;
+let typingLi = null;
 
 /* ─── JOIN ROOM ─── */
 function joinRoom() {
     const username = usernameInput.value.trim();
-    const roomId   = roomInput.value.trim();
+    const roomId = roomInput.value.trim();
 
     if (!username || !roomId) {
         shakeInput(!username ? usernameInput : roomInput);
@@ -22,6 +22,8 @@ function joinRoom() {
 
     currentUser = username;
     currentRoom = roomId;
+
+    console.log("JOINING ROOM:", roomId);
 
     socket.emit("join_room", { username, roomId });
 
@@ -33,18 +35,35 @@ function joinRoom() {
 function sendMessage() {
     const msg = msgInput.value.trim();
 
-    if (!currentRoom) {
+    if (!currentRoom || !currentUser) {
         addSystemMessage("Join a room first!");
         return;
     }
 
     if (!msg) return;
 
+    console.log("SENDING:", msg);
+
     socket.emit("send_message", msg);
+
     msgInput.value = "";
 
-    // Stop typing signal
     socket.emit("typing_stop");
+}
+
+/* ─── CLEAR CHAT ─── */
+function clearChat() {
+    if (!currentRoom) {
+        addSystemMessage("Join a room first!");
+        return;
+    }
+
+    const confirmClear = confirm("Clear all messages in this room?");
+    if (!confirmClear) return;
+
+    console.log("CLEAR REQUEST FOR ROOM:", currentRoom);
+
+    socket.emit("clear_chat");
 }
 
 /* ─── RECEIVE EVENTS ─── */
@@ -60,16 +79,22 @@ socket.on("chat_history", (messages) => {
     scrollToBottom();
 });
 
+socket.on("chat_cleared", () => {
+    console.log("CHAT CLEARED RECEIVED");
+    chat.innerHTML = "";
+    addSystemMessage("Chat cleared 🧹");
+});
+
+/* ─── USER EVENTS ─── */
 socket.on("user_joined", ({ username }) => {
     addSystemMessage(`${username} joined the room`);
-    scrollToBottom();
 });
 
 socket.on("user_left", ({ username }) => {
     addSystemMessage(`${username} left the room`);
-    scrollToBottom();
 });
 
+/* ─── TYPING EVENTS ─── */
 socket.on("user_typing", ({ username }) => {
     if (username === currentUser) return;
     showTypingIndicator(username);
@@ -90,6 +115,7 @@ function addMessage(msg) {
         const name = document.createElement("span");
         name.classList.add("sender-name");
         name.textContent = msg.sender;
+
         li.appendChild(name);
         li.appendChild(document.createTextNode(msg.text));
         li.classList.add("left");
@@ -109,13 +135,17 @@ function addSystemMessage(text) {
 
 /* ─── TYPING INDICATOR ─── */
 function showTypingIndicator(username) {
-    removeTypingIndicator();
+    if (typingLi) return; // prevent duplicate
+
     typingLi = document.createElement("li");
     typingLi.classList.add("typing-indicator");
+
     typingLi.innerHTML = `
         <span></span><span></span><span></span>
     `;
+
     typingLi.title = `${username} is typing…`;
+
     chat.appendChild(typingLi);
     scrollToBottom();
 }
@@ -141,6 +171,7 @@ msgInput.addEventListener("input", () => {
     socket.emit("typing_start");
 
     clearTimeout(typingTimer);
+
     typingTimer = setTimeout(() => {
         socket.emit("typing_stop");
     }, 1500);
@@ -156,36 +187,40 @@ roomInput.addEventListener("keypress", (e) => {
 
 /* ─── SCROLL ─── */
 function scrollToBottom() {
-    chat.scrollTo({ top: chat.scrollHeight, behavior: "smooth" });
+    chat.scrollTo({
+        top: chat.scrollHeight,
+        behavior: "smooth"
+    });
 }
 
 /* ─── THEME TOGGLE ─── */
 function toggleTheme(el) {
-    const doc  = document.documentElement;
+    const doc = document.documentElement;
     const dark = doc.getAttribute("data-theme") === "dark";
+
     doc.setAttribute("data-theme", dark ? "light" : "dark");
+
     el.querySelector(".knob").textContent = dark ? "☀️" : "🌙";
 }
 
-/* ─── INPUT SHAKE (validation feedback) ─── */
+/* ─── INPUT SHAKE ─── */
 function shakeInput(input) {
     input.style.borderColor = "#ef4444";
-    input.style.animation   = "none";
 
     const shake = [
-        { transform: "translateX(0)"  },
+        { transform: "translateX(0)" },
         { transform: "translateX(-5px)" },
-        { transform: "translateX(5px)"  },
+        { transform: "translateX(5px)" },
         { transform: "translateX(-4px)" },
-        { transform: "translateX(4px)"  },
-        { transform: "translateX(0)"  },
+        { transform: "translateX(4px)" },
+        { transform: "translateX(0)" }
     ];
 
-    input.animate(shake, { duration: 350, easing: "ease" });
+    input.animate(shake, { duration: 350 });
 
     setTimeout(() => {
         input.style.borderColor = "";
-    }, 1200);
+    }, 1000);
 
     input.focus();
 }
