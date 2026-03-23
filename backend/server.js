@@ -28,72 +28,73 @@ const io = new Server(server, {
 const users = {};
 
 io.on("connection", (socket) => {
+
     console.log("User connected:", socket.id);
 
-    // ✅ REGISTER USER + SEND CHAT HISTORY
-    socket.on("register", async (username) => {
-        users[username] = socket.id;
+    // ✅ JOIN ROOM
+    socket.on("join_room", async ({ username, roomId }) => {
 
-        console.log("Users:", users);
+        socket.join(roomId);
+        socket.username = username;
+        socket.roomId = roomId;
+
+        console.log(`${username} joined ${roomId}`);
+
+        // 🔥 notify others
+        socket.to(roomId).emit("user_joined", { username });
 
         try {
-            // 🔥 fetch old messages for this user
-            const messages = await Message.find({
-                $or: [
-                    { sender: username },
-                    { receiver: username }
-                ]
-            }).sort({ timestamp: 1 });
+            const messages = await Message.find({ roomId })
+                .sort({ timestamp: 1 });
 
-            // 🔥 send history to that user only
             socket.emit("chat_history", messages);
 
         } catch (err) {
-            console.log("Error fetching messages:", err);
+            console.log(err);
         }
     });
 
-    // ✅ SEND MESSAGE (PRIVATE + STORE IN DB)
-    socket.on("send_message", async ({ sender, receiver, text }) => {
-        const receiverSocket = users[receiver];
-        console.log("Incoming:", sender, receiver, text);
+    // ✅ SEND MESSAGE (FIXED)
+    socket.on("send_message", async (text) => {
+
+        if (!socket.roomId || !socket.username) return;
+
+        const msgData = {
+            roomId: socket.roomId,
+            sender: socket.username,
+            text
+        };
+
         try {
-            // 🔥 SAVE MESSAGE
-            const saved=await Message.create({
-                sender,
-                receiver,
-                text
-            });
-            console.log("Saved to DB:", saved);
+            await Message.create(msgData);
         } catch (err) {
             console.log("DB Error:", err);
         }
 
-        // 🔥 SEND TO RECEIVER
-        if (receiverSocket) {
-            io.to(receiverSocket).emit("receive_message", {
-                sender,
-                text
-            });
-        }
+        // 🔥 send to ALL in room (including sender)
+        io.to(socket.roomId).emit("receive_message", msgData);
+    });
 
-        // 🔥 SEND BACK TO SENDER (for UI)
-        socket.emit("receive_message", {
-            sender,
-            text
+    // ✅ TYPING
+    socket.on("typing_start", () => {
+        socket.to(socket.roomId).emit("user_typing", {
+            username: socket.username
         });
     });
 
-    // ✅ DISCONNECT USER
+    socket.on("typing_stop", () => {
+        socket.to(socket.roomId).emit("user_stopped_typing");
+    });
+
+    // ✅ DISCONNECT
     socket.on("disconnect", () => {
-        for (let user in users) {
-            if (users[user] === socket.id) {
-                delete users[user];
-                break;
-            }
+        if (socket.roomId && socket.username) {
+            socket.to(socket.roomId).emit("user_left", {
+                username: socket.username
+            });
         }
 
-        console.log("User disconnected:", socket.id);
+        console.log("Disconnected:", socket.id);
     });
 });
 

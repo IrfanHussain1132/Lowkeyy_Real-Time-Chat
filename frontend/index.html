@@ -4,44 +4,46 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mini Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Lowkeyy Chat</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
     <div class="app">
 
+        <!-- HEADER -->
         <div class="header">
             <div class="header-icon">🔥</div>
-            <div class="header-title">Mini Chat</div>
+            <div class="header-title">Lowkeyy</div>
+
             <div class="toggle" onclick="toggleTheme(this)">
                 <div class="knob">🌙</div>
             </div>
         </div>
 
-        <div class="name-row">
-            <label for="username">Your name</label>
+        <!-- USER + ROOM -->
+        <div class="top-controls">
             <input id="username" placeholder="Enter your name" />
+            <input id="room" placeholder="Room ID (e.g. abc123)" />
+            <button onclick="joinRoom()">Join</button>
         </div>
 
+        <!-- CHAT -->
         <ul id="chat"></ul>
 
+        <!-- INPUT -->
         <div class="input-bar">
             <input id="message" placeholder="Type message..." />
-            <button onclick="sendMessage()">
-                <svg width="15" height="15" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round" viewBox="0 0 24 24">
-                    <line x1="22" y1="2" x2="11" y2="13" />
-                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                </svg>
-            </button>
+            <button onclick="sendMessage()">➤</button>
         </div>
 
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
