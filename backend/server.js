@@ -16,8 +16,13 @@ mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB Connected"))
 .catch(err => console.log(err));
 
+const path = require("path");
 
+app.use(express.static(path.join(__dirname, "public")));
 
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 // 🔥 Socket.IO setup
 const io = new Server(server, {
     cors: {
