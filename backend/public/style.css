@@ -62,7 +62,6 @@ body {
     transition: background var(--transition);
 }
 
-/* subtle radial bg atmosphere */
 body::before {
     content: '';
     position: fixed;
@@ -132,9 +131,7 @@ body::before {
     transition: background var(--transition);
 }
 
-.toggle:hover {
-    border-color: var(--accent-light);
-}
+.toggle:hover { border-color: var(--accent-light); }
 
 .toggle .knob {
     position: absolute;
@@ -153,14 +150,13 @@ body::before {
     box-shadow: 0 0 6px rgba(124, 58, 237, 0.5);
 }
 
-[data-theme="light"] .toggle .knob {
-    transform: translateX(20px);
-}
+[data-theme="light"] .toggle .knob { transform: translateX(20px); }
 
 /* ================= TOP CONTROLS ================= */
 
 .top-controls {
     display: flex;
+    flex-wrap: wrap;        /* allows wrapping on small screens */
     gap: 7px;
     padding: 11px 13px;
     border-bottom: 1px solid var(--border);
@@ -169,22 +165,20 @@ body::before {
 }
 
 .top-controls input {
-    flex: 1;
+    flex: 1 1 80px;         /* shrink to 80px min, grow freely */
+    min-width: 0;
     background: var(--input-bg);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 7px 11px;
+    padding: 8px 11px;
     color: var(--text);
     font-size: 12.5px;
     font-family: inherit;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-    min-width: 0;
 }
 
-.top-controls input::placeholder {
-    color: var(--ph);
-}
+.top-controls input::placeholder { color: var(--ph); }
 
 .top-controls input:focus {
     border-color: var(--accent);
@@ -192,13 +186,15 @@ body::before {
     background: var(--surface);
 }
 
+/* Join button — fixed size, NEVER shrinks or disappears */
 .top-controls button {
-    padding: 7px 13px;
+    flex: 0 0 auto;
+    padding: 8px 16px;
     border-radius: 10px;
     background: linear-gradient(135deg, #7c3aed, #6d28d9);
     border: none;
     color: #fff;
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
@@ -212,9 +208,70 @@ body::before {
     box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
 }
 
-.top-controls button:active {
-    transform: scale(0.97);
+.top-controls button:active { transform: scale(0.97); }
+
+/* ================= TOOLBAR (clear + copy) ================= */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 13px;
+    border-bottom: 1px solid var(--border);
+    background: var(--app);
+    flex-shrink: 0;
 }
+
+/* Shared pill style */
+.clear-btn,
+.copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border-color 0.18s,
+                transform 0.12s, box-shadow 0.18s;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+/* Clear — red ghost pill */
+.clear-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.clear-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+}
+
+.clear-btn:active { transform: scale(0.96); }
+
+/* Copy link — accent ghost pill */
+.copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.copy-btn:hover {
+    background: var(--accent-glow);
+    color: var(--accent-light);
+    border-color: rgba(124, 58, 237, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.copy-btn:active { transform: scale(0.96); }
 
 /* ================= CHAT LIST ================= */
 
@@ -229,16 +286,9 @@ body::before {
     scroll-behavior: smooth;
 }
 
-#chat::-webkit-scrollbar {
-    width: 3px;
-}
+#chat::-webkit-scrollbar { width: 3px; }
+#chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-#chat::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 2px;
-}
-
-/* empty state */
 #chat:empty::after {
     content: 'Join a room to start chatting ✦';
     display: block;
@@ -262,7 +312,6 @@ body::before {
     box-shadow: var(--msg-shadow);
 }
 
-/* incoming (left) */
 .left {
     align-self: flex-start;
     background: var(--li-bg);
@@ -280,7 +329,6 @@ body::before {
     letter-spacing: 0.2px;
 }
 
-/* outgoing (right) */
 .right {
     align-self: flex-end;
     background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
@@ -289,7 +337,6 @@ body::before {
     box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
 }
 
-/* system / info messages */
 .system {
     align-self: center;
     background: transparent;
@@ -304,16 +351,9 @@ body::before {
     animation: fadeIn 0.3s ease forwards;
 }
 
-/* animations */
 @keyframes msgIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px) scale(0.97);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes fadeIn {
@@ -335,6 +375,7 @@ body::before {
 
 #message {
     flex: 1;
+    min-width: 0;
     background: var(--input-bg);
     border: 1px solid var(--border);
     border-radius: 20px;
@@ -345,12 +386,9 @@ body::before {
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     resize: none;
-    min-width: 0;
 }
 
-#message::placeholder {
-    color: var(--ph);
-}
+#message::placeholder { color: var(--ph); }
 
 #message:focus {
     border-color: var(--accent);
@@ -358,7 +396,6 @@ body::before {
     background: var(--surface);
 }
 
-/* SEND BUTTON */
 .input-bar button {
     width: 40px;
     height: 40px;
@@ -380,9 +417,7 @@ body::before {
     box-shadow: 0 5px 16px rgba(124, 58, 237, 0.5);
 }
 
-.input-bar button:active {
-    transform: scale(0.94);
-}
+.input-bar button:active { transform: scale(0.94); }
 
 /* ================= TYPING INDICATOR ================= */
 
@@ -415,34 +450,8 @@ body::before {
     30% { transform: translateY(-5px); opacity: 1; }
 }
 
-.clear-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 6px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.2s;
-}
-
-.clear-btn:hover {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border-color: #ef4444;
-}
-
-.copy-btn {
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    cursor: pointer;
-}
-
 /* ================= RESPONSIVE ================= */
 
-/* Tablet / large screens: float as a card */
 @media (min-width: 481px) {
     .app {
         width: 400px;
@@ -451,40 +460,36 @@ body::before {
     }
 }
 
-/* Mobile: fill the full viewport */
 @media (max-width: 480px) {
     body {
         align-items: stretch;
         justify-content: stretch;
     }
 
-    body::before {
-        display: none;
-    }
+    body::before { display: none; }
 
     .app {
         width: 100%;
-        height: 100dvh; /* dynamic viewport height handles mobile browser chrome */
+        height: 100dvh;
         border-radius: 0;
         border: none;
         box-shadow: none;
     }
 
-    /* Stack the two inputs on mobile so they don't squeeze */
+    /* Inputs sit side-by-side; Join drops to its own full-width row */
     .top-controls {
         flex-wrap: wrap;
     }
 
     .top-controls input {
-        flex: 1 1 calc(50% - 4px);
-        min-width: 0;
+        flex: 1 1 100px;
     }
 
     .top-controls button {
-        flex: 0 0 auto;
+        flex: 1 1 100%;   /* full width row on mobile */
+        justify-content: center;
+        text-align: center;
     }
 
-    #chat li {
-        max-width: 82%;
-    }
+    #chat li { max-width: 82%; }
 }
