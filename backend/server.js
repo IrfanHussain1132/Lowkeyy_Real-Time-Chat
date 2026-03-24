@@ -7,7 +7,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const Message = require("./message");
-
+console.log("ENV:", process.env.MONGO_URI);
 const app = express();
 const server = http.createServer(app);
 
