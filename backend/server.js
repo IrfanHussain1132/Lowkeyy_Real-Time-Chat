@@ -116,12 +116,13 @@ io.on("connection", (socket) => {
 });
 
 // 🔥 Start server
-mongoose.connection.once("open", () => {
-    console.log("MongoDB ready");
+const PORT = process.env.PORT || 3000;
 
-    const PORT = process.env.PORT || 3000;
-
-    server.listen(PORT, () => {
-        console.log("Server running on port", PORT);
-    });
+server.listen(PORT, () => {
+    console.log("Server running on port", PORT);
 });
+
+// Mongo connect separately
+mongoose.connect(process.env.MONGO_URI)
+.then(() => console.log("MongoDB Connected"))
+.catch(err => console.log("Mongo Error:", err));
