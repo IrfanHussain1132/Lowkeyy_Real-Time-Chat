@@ -1,4 +1,5 @@
-const socket = io("http://localhost:3000");
+
+const socket = io();
 
 const chat = document.getElementById("chat");
 const msgInput = document.getElementById("message");
@@ -251,3 +252,4 @@ function copyRoomLink() {
 
     addSystemMessage("Room link copied 🔗");
 }
+

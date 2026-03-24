@@ -1,3 +1,7 @@
+require("dotenv").config();
+
+
+console.log("ENV CHECK:", process.env.MONGO_URI);
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -8,11 +12,11 @@ const app = express();
 const server = http.createServer(app);
 
 // 🔥 MongoDB Connection
-mongoose.connect("mongodb://127.0.0.1:27017/Lowkeyy", {
-    serverSelectionTimeoutMS: 5000,
-})
-    .then(() => console.log("MongoDB Connected"))
-    .catch(err => console.log(err));
+mongoose.connect(process.env.MONGO_URI)
+.then(() => console.log("MongoDB Connected"))
+.catch(err => console.log(err));
+
+
 
 // 🔥 Socket.IO setup
 const io = new Server(server, {
