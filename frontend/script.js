@@ -23,7 +23,9 @@ function joinRoom() {
     currentUser = username;
     currentRoom = roomId;
 
-    console.log("JOINING ROOM:", roomId);
+    // 🔥 UPDATE URL (IMPORTANT)
+    const url = `${window.location.origin}?room=${roomId}`;
+    window.history.pushState({}, "", url);
 
     socket.emit("join_room", { username, roomId });
 
@@ -132,7 +134,14 @@ function addSystemMessage(text) {
     chat.appendChild(li);
     scrollToBottom();
 }
+window.addEventListener("load", () => {
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get("room");
 
+    if (room) {
+        roomInput.value = room;
+    }
+});
 /* ─── TYPING INDICATOR ─── */
 function showTypingIndicator(username) {
     if (typingLi) return; // prevent duplicate
@@ -177,8 +186,13 @@ msgInput.addEventListener("input", () => {
     }, 1500);
 });
 
-usernameInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") roomInput.focus();
+usernameInput.addEventListener("blur", () => {
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get("room");
+
+    if (room && usernameInput.value.trim()) {
+        joinRoom();
+    }
 });
 
 roomInput.addEventListener("keypress", (e) => {
@@ -223,4 +237,17 @@ function shakeInput(input) {
     }, 1000);
 
     input.focus();
+}
+
+function copyRoomLink() {
+    if (!currentRoom) {
+        addSystemMessage("Join a room first!");
+        return;
+    }
+
+    const link = `${window.location.origin}?room=${currentRoom}`;
+
+    navigator.clipboard.writeText(link);
+
+    addSystemMessage("Room link copied 🔗");
 }
